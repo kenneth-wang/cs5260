@@ -1,0 +1,6 @@
+pandas
+tensorflow
+transformers
+sentence-transformers
+torch
+numpy==1.19.5
