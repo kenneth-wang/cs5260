@@ -1,0 +1,14 @@
+PATHS:
+  DATA_FILE_PATH: data/raw/data_file.csv
+  TRAIN_FILE_PATH: data/raw/train.csv # data/processed/train.csv
+  TEST_FILE_PATH: data/raw/test.csv # data/processed/test.csv
+  MODEL_OUTPUT_ROOT_PATH: outputs/model/model_with_gen_q/
+
+PARAMS:
+  MODEL_NAME: msmarco-distilbert-base-v3
+  EPOCHS: 3
+  TRAIN_BATCH_SIZE: 32
+  EVALUATION_STEPS: 5
+
+VARIABLES:
+  TOP_K: 10
