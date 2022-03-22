@@ -6,7 +6,7 @@ import torch
 import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModel
 
-from utils.config import CUSTOM_PATHS, CUSTOM_VARIABLES
+from config import CUSTOM_PATHS, CUSTOM_VARIABLES
 from common import mean_pooling
 
 
@@ -102,10 +102,10 @@ class Evaluator():
         raw_df = pd.read_csv(CUSTOM_PATHS["RAW_DATA_PATH"])
         eval_df = pd.read_csv(CUSTOM_PATHS["TEST_DATA_PATH"])
 
-        docs = raw_df["context"].tolist()
+        docs = raw_df["ansStr"].tolist()
 
-        eval_queries = eval_df["query_str"].tolist()
-        eval_ans_idx = eval_df["idx_of_ans"].tolist()
+        eval_queries = eval_df["queryStr"].tolist()
+        eval_ans_idx = eval_df["idxOfAns"].tolist()
 
         tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/msmarco-distilbert-cos-v5")
         model = AutoModel.from_pretrained(self.model_path)

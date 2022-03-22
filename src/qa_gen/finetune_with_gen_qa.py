@@ -10,7 +10,7 @@ from transformers import AutoTokenizer, AutoModel, set_seed
 from tqdm.auto import tqdm
 from transformers.optimization import get_linear_schedule_with_warmup
 
-from utils.config import CUSTOM_PATHS, CUSTOM_PARAMS
+from config import CUSTOM_PATHS, CUSTOM_PARAMS
 from common import mean_pooling
 
 
