@@ -33,10 +33,10 @@ const questionAnswerPairs = filenames
     return json.posts;
   })
   .map((post) => ({
-    ansStr: csvCompatible(stripHtml(post.answers[0].body)),
-    queryStr: csvCompatible(post.title),
-    idxOfAns: post.answers[0].id,
-    idxOfQns: post.id,
+    ans_str: csvCompatible(stripHtml(post.answers[0].body)),
+    query_str: csvCompatible(post.title),
+    idx_of_ans: post.answers[0].id,
+    idx_of_qns: post.id,
   }));
 
 const csvString = convertToCsv(questionAnswerPairs);
