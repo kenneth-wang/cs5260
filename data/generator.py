@@ -6,13 +6,14 @@ COLS = ["ans_str", "query_str", "idx_of_ans", "idx_of_qns"]
 INDEX_COL = "idx_of_ans"
 
 TrainingSet, TestSet = pd.DataFrame, pd.DataFrame
+TrainingSet = pd.DataFrame
 
 
 def _generate_split(
     df_ori: pd.DataFrame,
     df_gen: pd.DataFrame,
     random_state: int,
-) -> Tuple[TrainingSet, TestSet]:
+) -> Tuple[TrainingSet, TrainingOriSet, TestSet]:
     """
     Args:
         df_ori: the original qn-ans pairs
@@ -29,7 +30,7 @@ def _generate_split(
     
     assert set(train_aug.index).intersection(set(test_ori.index)) == set()
 
-    return train_aug, test_ori
+    return train_aug, train_ori, test_ori
 
 
 def generate_data(num_experiments: int) -> Generator:
