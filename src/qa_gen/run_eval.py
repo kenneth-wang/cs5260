@@ -25,13 +25,26 @@ def parse_args():
     parser.add_argument(
         "--save_preds_path", type=str
     )
+
+    parser.add_argument(
+        "--corpus_path", type=str,
+        default=None
+    )
+
+    parser.add_argument(
+        "--test_data_path", type=str,
+        default=None
+    )
  
     return parser.parse_args()
 
 
 class Evaluator():
-    def __init__(self, model_path):
-        self.model_path = model_path
+    # def __init__(self, model_path):
+    def __init__(self, **kwargs):
+        self.model_path = kwargs['model_path']
+        self.corpus_file = kwargs['corpus_path']
+        self.test_file = kwargs['test_data_path']
 
     def compute_scores(self, query_emb, doc_emb):
         scores = torch.mm(query_emb, doc_emb.transpose(0, 1)).cpu()
@@ -99,13 +112,15 @@ class Evaluator():
 
     def run_eval(self, save_preds, save_preds_path):
         # Sentences we want sentence embeddings for
-        raw_df = pd.read_csv(CUSTOM_PATHS["RAW_DATA_PATH"])
-        eval_df = pd.read_csv(CUSTOM_PATHS["TEST_DATA_PATH"])
+        # raw_df = pd.read_csv(CUSTOM_PATHS["RAW_DATA_PATH"])
+        # eval_df = pd.read_csv(CUSTOM_PATHS["TEST_DATA_PATH"])
+        raw_df = pd.read_csv(self.corpus_file)
+        eval_df = pd.read_csv(self.test_file)
 
-        docs = raw_df["ansStr"].tolist()
+        docs = raw_df["ans_str"].tolist()
 
-        eval_queries = eval_df["queryStr"].tolist()
-        eval_ans_idx = eval_df["idxOfAns"].tolist()
+        eval_queries = eval_df["query_str"].tolist()
+        eval_ans_idx = eval_df["idx_of_ans"].tolist()
 
         tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/msmarco-distilbert-cos-v5")
         model = AutoModel.from_pretrained(self.model_path)
@@ -123,7 +138,21 @@ class Evaluator():
 
 def main():
     args = parse_args()
-    ev = Evaluator(args.model_path)
+
+    # Test on first set of data
+    args.corpus_path = "data/train_"+str(1)+".csv"
+    args.test_data_path = "data/test_"+str(1)+".csv"
+
+    # run on all sets - Not tested yet
+    # for i in range(1,6):
+    #     args.corpus_path = "data/train_"+str(i)+".csv"
+    #     args.test_data_path = "data/test_"+str(i)+".csv"
+
+    #     print(args.corpus_path)
+    #     print(args.test_data_path)
+    # ev = Evaluator(args.model_path)
+
+    ev = Evaluator(**vars(args))
     ev.run_eval(args.save_preds, args.save_preds_path)
 
 if __name__ == "__main__":

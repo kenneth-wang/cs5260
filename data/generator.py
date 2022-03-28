@@ -6,7 +6,7 @@ COLS = ["ans_str", "query_str", "idx_of_ans", "idx_of_qns"]
 INDEX_COL = "idx_of_ans"
 
 TrainingSet, TestSet = pd.DataFrame, pd.DataFrame
-TrainingSet = pd.DataFrame
+TrainingOriSet = pd.DataFrame
 
 
 def _generate_split(
@@ -57,3 +57,14 @@ def generate_data(num_experiments: int) -> Generator:
 
     for i in range(num_experiments):
         yield _generate_split(df_ori, df_gen, random_state=i)
+
+
+if __name__ == "__main__":
+
+    i = 1
+    for x,y,z in generate_data(5):
+        x.to_csv("train_"+str(i)+".csv")
+        y.to_csv("trainorig_"+str(i)+".csv")
+        z.to_csv("test_"+str(i)+".csv")
+
+        i += 1
