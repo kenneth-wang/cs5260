@@ -20,10 +20,12 @@ def parse_args():
 
     parser.add_argument(
         "--num_train_epochs", type=int,
+        default=1
     )
 
     parser.add_argument(
         "--batch_size", type=int,
+        default=10
     )
  
     return parser.parse_args()
@@ -162,7 +164,7 @@ def main():
             loop.set_postfix(loss=loss.item())
 
     if not os.path.exists(CUSTOM_PATHS["GEN_QA_MODEL_OUTPUT_PATH"]):
-        os.mkdir(CUSTOM_PATHS["GEN_QA_MODEL_OUTPUT_PATH"])
+        os.makedirs(CUSTOM_PATHS["GEN_QA_MODEL_OUTPUT_PATH"])
 
     model.save_pretrained(CUSTOM_PATHS["GEN_QA_MODEL_OUTPUT_PATH"])
 

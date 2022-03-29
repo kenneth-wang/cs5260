@@ -1,5 +1,6 @@
 import os
 import argparse
+import json
 
 import pandas as pd
 import torch
@@ -67,8 +68,21 @@ class Evaluator():
         return embeddings
 
     def calc_mrr(self, query_emb, doc_emb, ans_idx):
-        #Compute dot score between query and all document embeddings
+        
+        # Compute dot score between query and all document embeddings
+        # Original version: Scores for all queries calculated togther
         scores = self.compute_scores(query_emb, doc_emb)
+        
+        # Alternate version: If there are memory issues, can use this version 
+        # which calculates the scores for each query individually and combines 
+        # together so that it has the same output as the original version.        
+        # for i, x in enumerate(query_emb):
+        #     score = self.compute_scores(x.unsqueeze(0), doc_emb)
+        #     if i == 0:
+        #         scores = score
+        #     else:
+        #         scores = torch.cat((scores, score),0)
+
         ranks = []
         for i in range(len(query_emb)):
             q_orders = (-scores[i]).argsort()
@@ -122,38 +136,58 @@ class Evaluator():
         eval_queries = eval_df["query_str"].tolist()
         eval_ans_idx = eval_df["idx_of_ans"].tolist()
 
+        print("Loading tokenizer and model")
         tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/msmarco-distilbert-cos-v5")
         model = AutoModel.from_pretrained(self.model_path)
 
         # Encode query and docs
-        query_emb = self.encode(tokenizer, model, eval_queries)
-        doc_emb = self.encode(tokenizer, model, docs)
+        print("Encoding queries")
+        query_emb = self.encode(tokenizer, model, eval_queries) # 188x768
+        print("Encoding corpus")
+        doc_emb = self.encode(tokenizer, model, docs) # 50 x 768 x 4 bytes
 
+        print("Calculating scores")
         ranks, mrr = self.calc_mrr(query_emb, doc_emb, eval_ans_idx)
         print(f"mrr for model located at {self.model_path}: {mrr}")
 
         if save_preds:
             self._generate_predictions(save_preds_path, query_emb, eval_queries, doc_emb, docs, ranks, self.model_path, mrr)
 
+        return {'model': self.model_path, 'mrr': mrr.item()}
+
 
 def main():
+
+    # CHANGE HERE: Name of output file
+    results_filename = 'results_mod_origq_1.json'
     args = parse_args()
 
-    # Test on first set of data
-    args.corpus_path = "data/train_"+str(1)+".csv"
-    args.test_data_path = "data/test_"+str(1)+".csv"
+    args.corpus_path = "data/data.csv"
+    print(args.corpus_path)
 
-    # run on all sets - Not tested yet
-    # for i in range(1,6):
-    #     args.corpus_path = "data/train_"+str(i)+".csv"
-    #     args.test_data_path = "data/test_"+str(i)+".csv"
+    # CHANGE HERE: Path to model, either local folder or from model zoo
+    # If this param is commented, then default model used (defined in parser object)
+    # above
+    args.model_path = "outputs/model/model_with_gen_q/1o/"
+    
+    all_results = [] # Save results in a list of dicts
+    for i in range(1,6):
+        # Enumerate over each test dataset
+        args.test_data_path = "data/test_"+str(i)+".csv"
+        print(args.test_data_path)
 
-    #     print(args.corpus_path)
-    #     print(args.test_data_path)
-    # ev = Evaluator(args.model_path)
+        ev = Evaluator(**vars(args))
+        results = ev.run_eval(args.save_preds, args.save_preds_path)
+        results['data_idx'] = i
 
-    ev = Evaluator(**vars(args))
-    ev.run_eval(args.save_preds, args.save_preds_path)
+        all_results.append(results)
+
+    print(results)
+
+    # save to file
+    with open(results_filename, 'w') as outfile:
+        json.dump(all_results, outfile)
+    
 
 if __name__ == "__main__":
     main()
