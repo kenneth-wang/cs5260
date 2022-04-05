@@ -92,13 +92,16 @@ class Evaluator():
         
         return ranks, sum([1/(v+1) for v in ranks])/len(ranks)
 
-    def _generate_predictions(self, save_pred_path, query_emb, queries, doc_emb, docs, ranks, model_path, mrr):
-
+    def _generate_predictions(self, save_pred_path, query_emb, queries, doc_emb, docs, ranks, model_path, mrr, test_idx):
+      
+        print("saving results")
+        
         scores = self.compute_scores(query_emb, doc_emb)
-
+        
         predictions = []
         #Combine docs & scores
         for i in range(len(query_emb)):
+            # print(f"query i = {i}")
             rank = ranks[i]
             doc_score_pairs = list(zip(docs, scores[i]))
 
@@ -113,18 +116,21 @@ class Evaluator():
                     is_actual_ans = ""
                 predictions.append((queries[i], doc, score.item(), is_actual_ans, mrr.item()))
 
-            if i >= CUSTOM_VARIABLES["TOP_K"]:
-                break
+                # print(f"doc_idx = {doc_idx}")
+
+                if doc_idx >= CUSTOM_VARIABLES["TOP_K"]:
+                    break
 
         pred_df = pd.DataFrame(predictions, columns=["query_str", "ans_str", "score", "is_actual_ans", "MRR"])
-
+        
         if not os.path.exists(save_pred_path):
             os.makedirs(save_pred_path)
         
         model_name = model_path.split("/")[-1]
-        pred_df.to_csv(f"{save_pred_path}/{model_name}.csv", index=False)
+        print(f"{save_pred_path}/{model_name}.csv")
+        pred_df.to_csv(f"{save_pred_path}/{model_name}_{test_idx}.csv", index=False)
 
-    def run_eval(self, save_preds, save_preds_path):
+    def run_eval(self, save_preds, save_preds_path, test_idx):
         # Sentences we want sentence embeddings for
         # raw_df = pd.read_csv(CUSTOM_PATHS["RAW_DATA_PATH"])
         # eval_df = pd.read_csv(CUSTOM_PATHS["TEST_DATA_PATH"])
@@ -135,6 +141,9 @@ class Evaluator():
 
         eval_queries = eval_df["query_str"].tolist()
         eval_ans_idx = eval_df["idx_of_ans"].tolist()
+
+        print(len(eval_queries))
+
 
         print("Loading tokenizer and model")
         tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/msmarco-distilbert-cos-v5")
@@ -151,33 +160,37 @@ class Evaluator():
         print(f"mrr for model located at {self.model_path}: {mrr}")
 
         if save_preds:
-            self._generate_predictions(save_preds_path, query_emb, eval_queries, doc_emb, docs, ranks, self.model_path, mrr)
+            self._generate_predictions(save_preds_path, query_emb, eval_queries, doc_emb, docs, ranks, self.model_path, mrr, test_idx)
 
         return {'model': self.model_path, 'mrr': mrr.item()}
-
 
 def main():
 
     # CHANGE HERE: Name of output file
-    results_filename = 'results_mod_origq_1.json'
+    results_filename = 'tmp.json'
     args = parse_args()
 
     args.corpus_path = "data/data.csv"
     print(args.corpus_path)
 
-    # CHANGE HERE: Path to model, either local folder or from model zoo
-    # If this param is commented, then default model used (defined in parser object)
-    # above
-    args.model_path = "outputs/model/model_with_gen_q/1o/"
-    
+    args.save_preds = True
+    args.save_preds_path = 'data/predictions'
+
     all_results = [] # Save results in a list of dicts
     for i in range(1,6):
+
+        # CHANGE HERE: Path to model, either local folder or from model zoo
+        # If this param is commented, then default model used (defined in parser object)
+        # above
+        args.model_path = f"outputs/model/model_with_gen_q/{i}o/"
+        print(args.model_path)
+
         # Enumerate over each test dataset
         args.test_data_path = "data/test_"+str(i)+".csv"
         print(args.test_data_path)
 
         ev = Evaluator(**vars(args))
-        results = ev.run_eval(args.save_preds, args.save_preds_path)
+        results = ev.run_eval(args.save_preds, args.save_preds_path, str(i)+'o')
         results['data_idx'] = i
 
         all_results.append(results)
@@ -191,10 +204,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
