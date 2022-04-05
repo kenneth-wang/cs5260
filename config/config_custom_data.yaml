@@ -1,9 +1,9 @@
 PATHS:
-  RAW_DATA_PATH: data/data.csv
-  MNLI_FORMAT_DATA_PATH: data/raw/mnli_data.json
-  GEN_QA_DATA_PATH: data/trainorig_1.csv
-  TEST_DATA_PATH: data/test_1.csv
-  GEN_QA_MODEL_OUTPUT_PATH: outputs/model/model_with_gen_q/1o/
+  RAW_DATA_PATH: path/to/data.csv
+  MNLI_FORMAT_DATA_PATH: path/to/mnli_data.json
+  GEN_QA_DATA_PATH: path/to/generated_questions.json
+  TEST_DATA_PATH: path/to/test.csv
+  GEN_QA_MODEL_OUTPUT_PATH: outputs/model/
   MLM_MODEL_OUTPUT_PATH: outputs/model/model_mlm/
 
 PARAMS:

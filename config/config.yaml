@@ -1,8 +1,8 @@
 PATHS:
-  DATA_FILE_PATH: data/raw/data_file.csv
-  TRAIN_FILE_PATH: data/raw/train.csv # data/processed/train.csv
-  TEST_FILE_PATH: data/raw/test.csv # data/processed/test.csv
-  MODEL_OUTPUT_ROOT_PATH: outputs/model/model_with_gen_q/
+  DATA_FILE_PATH: path/to/data.csv
+  TRAIN_FILE_PATH: path/to/train.csv
+  TEST_FILE_PATH: path/to/test.csv
+  MODEL_OUTPUT_ROOT_PATH: outputs/model/
 
 PARAMS:
   MODEL_NAME: msmarco-distilbert-base-v3
