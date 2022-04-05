@@ -1,13 +1,16 @@
-# Parser
+# Data
 
-Parses *.json into `data.zip`.
+For this project, the QA corpus was scrapped from [this](https://ask.gov.sg/agency/moh?topics=COVID-19%20Vaccination%20and%20Booster) website.
 
-Requirements
+Once the QA pairs are download, put them into a Comma-Seperated (CSV) file with the following columns.
 
-* Node v14.18.3
+| Column name | Type | Description | Example |
+| --- | --- | --- | --- |
+| idx_of_ans | int | Unique identifier for each answer | 1, 2, 101 etc.|
+| ans_str | str | Answer text | |
+| query_str | str | Question text | |
+| idx_of_qns | int | Unique identifier for each answer |  1, 2, 101 etc. |
 
-```bash
-node parser.js
-```
+After questions have been generated using the generative model, the new questions will need to be
+saved in the same csv format. Take care to use a unique question index (idx_of_qns) for each new question.
 
-Data taken from https://ask.gov.sg/questions/904
